@@ -19,7 +19,7 @@ namespace APICatalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Produto>> Get()
         {
-            var produtos = _context.Produtos.ToList();
+            var produtos = _context.Produtos.Take(10).ToList();
             if (produtos is null)
             {
                 return NotFound("Produtos não encontrados...");
@@ -37,9 +37,9 @@ namespace APICatalogo.Controllers
             }
             return produto;
         }
-
         [HttpPost]
         public ActionResult Post(Produto produto)
+
         {
             if (produto is null)
                 return BadRequest();
