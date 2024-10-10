@@ -21,8 +21,18 @@ namespace APICatalogo.Controllers
         [HttpGet("produtos")]
         public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
         {
-            //return _context.Categorias.Include(p=> p.Produtos).AsNoTracking().ToList();
-            return _context.Categorias.Include(p => p.Produtos).Where(c => c.CategoriaId <= 10).ToList();
+            try
+            {
+                //return _context.Categorias.Include(p=> p.Produtos).AsNoTracking().ToList();
+                return _context.Categorias.Include(p => p.Produtos).Where(c => c.CategoriaId <= 10).ToList();
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                   "Ocorreu um problema ao tratar a sua solicitação.");
+            }
+            
         }
 
         [HttpGet]
@@ -49,7 +59,7 @@ namespace APICatalogo.Controllers
                 var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
                 if (categoria == null)
                 {
-                    return NotFound("Categoria não encontrado...");
+                    return NotFound($"Categoria Id = {id} não encontrada!");
                 }
                 return Ok(categoria);
             }
