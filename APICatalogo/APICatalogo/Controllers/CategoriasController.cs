@@ -19,28 +19,34 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet("produtos")]
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
+        public async Task<ActionResult<IEnumerable<Categoria>>> GetCategoriasProdutosAsync()
         {
             try
             {
-                //return _context.Categorias.Include(p=> p.Produtos).AsNoTracking().ToList();
-                return _context.Categorias.Include(p => p.Produtos).Where(c => c.CategoriaId <= 10).ToList();
+                // Use ToListAsync para realizar a consulta de forma assíncrona
+                var categoria = await _context.Categorias
+                    .Include(p => p.Produtos)
+                    .Where(c => c.CategoriaId <= 10)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                return categoria; // Retorne a lista de categoria
             }
             catch (Exception)
             {
-
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                   "Ocorreu um problema ao tratar a sua solicitação.");
+                    "Ocorreu um problema ao tratar a sua solicitação.");
             }
-            
         }
 
+
         [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public async Task<ActionResult<IEnumerable<Categoria>>> GetAsync()
         {
             try
             {
-                return _context.Categorias.AsNoTracking().ToList();
+                var categoria = await _context.Categorias.AsNoTracking().ToListAsync();
+                return categoria;
             }
             catch (Exception)
             {
@@ -52,11 +58,12 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> Get(int id)
+        public async Task<ActionResult<Categoria>> GetAsync(int id)
         {
             try
             {
-                var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
+                var categoria = await _context.Categorias
+                    .FirstOrDefaultAsync(p => p.CategoriaId == id);
                 if (categoria == null)
                 {
                     return NotFound($"Categoria Id = {id} não encontrada!");
@@ -73,7 +80,7 @@ namespace APICatalogo.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post(Categoria categoria)
+        public async Task<ActionResult> PostAsync(Categoria categoria)
         {
             try
             {
@@ -83,7 +90,7 @@ namespace APICatalogo.Controllers
                 }
 
                 _context.Categorias.Add(categoria);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 return new CreatedAtRouteResult("ObterCategoria",
                     new { id = categoria.CategoriaId }, $"Categoria {categoria.CategoriaId} criada com sucesso!");
@@ -98,7 +105,7 @@ namespace APICatalogo.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Categoria categoria)
+        public async Task<ActionResult> PutAsync(int id, Categoria categoria)
         {
             try
             {
@@ -106,8 +113,8 @@ namespace APICatalogo.Controllers
                 {
                     return BadRequest();
                 }
-                _context.Entry(categoria).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _context.SaveChanges();
+                _context.Entry(categoria).State = EntityState.Modified;
+               await _context.SaveChangesAsync();
 
                 return Ok($"Categoria Id = {id} atualizada com sucesso!");
             }
@@ -121,18 +128,24 @@ namespace APICatalogo.Controllers
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> DeleteAsync(int id)
         {
             try
             {
-                var categoria = _context.Categorias.FirstOrDefault(p => p.CategoriaId == id);
-                // var produto = _context.Categorias.Find(id);
+                // Obtendo a categoria de forma assíncrona
+                var categoria = await _context.Categorias
+                    .FirstOrDefaultAsync(p => p.CategoriaId == id);
+
                 if (categoria == null)
                 {
-                    return NotFound($"Categoria com Id = {id} não localizado...");
+                    return NotFound($"Categoria com Id = {id} não localizada...");
                 }
+
+                // Removendo a categoria do contexto
                 _context.Categorias.Remove(categoria);
-                _context.SaveChanges();
+
+                // Salvando as alterações de forma assíncrona
+                await _context.SaveChangesAsync();
 
                 return Ok($"Categoria Id = {id} deletada com sucesso!");
             }
@@ -140,8 +153,8 @@ namespace APICatalogo.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError,
                 "Ocorreu um problema ao tratar a sua solicitação.");
-            }    
-           
+            }
         }
+
     }
 }
