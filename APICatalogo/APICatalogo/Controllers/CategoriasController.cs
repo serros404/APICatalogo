@@ -1,5 +1,6 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
+using APICatalogo.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,21 @@ namespace APICatalogo.Controllers
         public CategoriasController(AppDbContext context)
         {
             _context = context;
+
+        }
+
+        [HttpGet("UsandoFromServices/{nome}")]
+        public ActionResult<string> GetSaudacaoFromServices([FromServices] IMeuServico meuServico,
+                                                          string nome)
+        {
+            return meuServico.Saudacao(nome);
+        }
+
+        [HttpGet("SemFromServices/{nome}")]
+        public ActionResult<string> GetSemFromServices(IMeuServico meuServico,
+                                                       string nome)
+        {
+            return meuServico.Saudacao(nome);
         }
 
         [HttpGet("produtos")]
@@ -54,7 +70,7 @@ namespace APICatalogo.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     "Ocorreu um problema ao tratar a sua solicitação.");
             }
-            
+
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
@@ -76,7 +92,7 @@ namespace APICatalogo.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,
                     "Ocorreu um problema ao tratar a sua solicitação.");
             }
-            
+
         }
 
         [HttpPost]
@@ -101,7 +117,7 @@ namespace APICatalogo.Controllers
                     "Ocorreu um problema ao tratar a sua solicitação.");
 
             }
-           
+
         }
 
         [HttpPut("{id:int}")]
@@ -114,17 +130,17 @@ namespace APICatalogo.Controllers
                     return BadRequest();
                 }
                 _context.Entry(categoria).State = EntityState.Modified;
-               await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
                 return Ok($"Categoria Id = {id} atualizada com sucesso!");
             }
             catch (Exception)
             {
-                    return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Ocorreu um problema ao tratar a sua solicitação.");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                "Ocorreu um problema ao tratar a sua solicitação.");
             }
-                
-           
+
+
         }
 
         [HttpDelete("{id:int}")]
